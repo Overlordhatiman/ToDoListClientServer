@@ -17,9 +17,14 @@ namespace ToDoListClientApp.ViewModels
         private readonly Services.ToDoServiceClient _service;
         private readonly CancellationTokenSource _cts;
 
-        public ObservableCollection<ToDoItemModel> Items { get; set; } = new();
+        public ObservableCollection<ToDoItemModel> Items { get; set; } = new ObservableCollection<ToDoItemModel>();
 
-        public string? NewDescription { get; set; }
+        private string _newDescription;
+        public string NewDescription
+        {
+            get => _newDescription;
+            set { _newDescription = value; OnPropertyChanged(nameof(NewDescription)); }
+        }
 
         public ICommand AddCommand { get; }
         public ICommand ToggleStatusCommand { get; }
@@ -29,39 +34,44 @@ namespace ToDoListClientApp.ViewModels
             _service = new Services.ToDoServiceClient();
             AddCommand = new RelayCommand(async () => await AddItem());
             ToggleStatusCommand = new RelayCommand<ToDoItemModel>(async item => await ToggleStatus(item));
-            Task.Run(LoadItems); 
+
             _cts = new CancellationTokenSource();
-            Task.Run(() => _service.SubscribeAsync(Items, _cts.Token));
+            _ = StartListeningAsync(_cts.Token);
         }
         private async Task ToggleStatus(ToDoItemModel item)
         {
             if (item == null) return;
 
-            var updated = await _service.ToggleStatusAsync(item.Id);
-
-            item.IsCompleted = updated.Status == "Completed";
+            await _service.ToggleStatusAsync(item.Id);
         }
 
         private async Task AddItem()
         {
-            if (!string.IsNullOrWhiteSpace(NewDescription))
-            {
-                await _service.AddItemAsync(NewDescription);
-            }
-        }
+            if (string.IsNullOrWhiteSpace(NewDescription)) return;
 
-        private async Task LoadItems()
+            await _service.AddItemAsync(NewDescription);
+            NewDescription = string.Empty;
+        }
+        private async Task StartListeningAsync(CancellationToken token)
         {
-            Items.Clear();
-            var response = await _service.GetListAsync();
-            foreach (var item in response)
+            await foreach (var item in _service.SubscribeAsync(token))
             {
-                Items.Add(new ToDoItemModel
+                var existing = Items.FirstOrDefault(x => x.Id == item.Id);
+
+                if (existing != null)
                 {
-                    Id = item.Id,
-                    Description = item.Description,
-                    IsCompleted = item.Status == "Completed"
-                });
+                    existing.Description = item.Description;
+                    existing.IsCompleted = item.Status == "Completed";
+                }
+                else
+                {
+                    Items.Add(new ToDoItemModel
+                    {
+                        Id = item.Id,
+                        Description = item.Description,
+                        IsCompleted = item.Status == "Completed"
+                    });
+                }
             }
         }
     }

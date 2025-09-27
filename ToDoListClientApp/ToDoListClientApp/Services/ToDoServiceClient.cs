@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Todo;
@@ -48,31 +49,13 @@ namespace ToDoListClientApp.Services
             return items;
         }
 
-        public async Task SubscribeAsync(ObservableCollection<ToDoItemModel> items, CancellationToken ct = default)
+        public async IAsyncEnumerable<ToDoItem> SubscribeAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             using var call = _client.GetList(new Empty());
 
-            try
+            while (await call.ResponseStream.MoveNext(cancellationToken))
             {
-                while (await call.ResponseStream.MoveNext(ct))
-                {
-                    var item = call.ResponseStream.Current;
-                    // update UI on UI thread
-                    App.Current.Dispatcher.Invoke(() => {
-                        var existing = items.FirstOrDefault(i => i.Id == item.Id);
-                        if (existing == null)
-                            items.Add(new ToDoItemModel { Id = item.Id, Description = item.Description, IsCompleted = item.Status == "Completed" });
-                        else
-                        {
-                            existing.Description = item.Description;
-                            existing.IsCompleted = item.Status == "Completed";
-                        }
-                    });
-                }
-            }
-            catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
-            {
-                // subscription cancelled
+                yield return call.ResponseStream.Current;
             }
         }
     }

@@ -16,16 +16,15 @@
                         <GridViewColumn Header="Completed" Width="100">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <CheckBox IsChecked="{Binding IsCompleted, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                  Command="{Binding DataContext.ToggleStatusCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
-                                  CommandParameter="{Binding}" />
+                                    <CheckBox IsChecked="{Binding IsCompleted, Mode=TwoWay}"
+                                              Command="{Binding DataContext.ToggleStatusCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                              CommandParameter="{Binding}" />
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
                     </GridView>
                 </ListView.View>
             </ListView>
-
         </StackPanel>
     </Grid>
 </Window>
