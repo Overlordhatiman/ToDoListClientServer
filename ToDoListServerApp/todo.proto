@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package todo;
+
+// ToDo item message
+message ToDoItem {
+  int32 id = 1;
+  string description = 2;
+  string status = 3; // "Pending" or "Completed"
+}
+
+// Request to add item
+message AddItemRequest {
+  string description = 1;
+}
+
+message AddItemResponse {
+  ToDoItem item = 1;
+}
+
+// Request to update item
+message UpdateStatusRequest {
+  int32 id = 1;
+}
+
+message UpdateStatusResponse {
+  ToDoItem item = 1;
+}
+
+// Empty request/response
+message Empty {}
+
+service ToDoService {
+  rpc AddItem(AddItemRequest) returns (AddItemResponse);
+  rpc UpdateStatus(UpdateStatusRequest) returns (UpdateStatusResponse);
+  rpc GetList(Empty) returns (stream ToDoItem);
+}

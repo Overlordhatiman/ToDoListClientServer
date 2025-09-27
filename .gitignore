@@ -1,0 +1,37 @@
+# Build directories
+build/
+out/
+bin/
+Debug/
+Release/
+x64/
+x86/
+*.exe
+*.dll
+*.lib
+*.a
+*.so
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# IDE
+.vs/
+.vscode/
+*.sln
+*.vcxproj*
+*.user
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Dependencies
+vcpkg/
+packages/
