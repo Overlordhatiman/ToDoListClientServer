@@ -2,9 +2,6 @@
 
 project(ToDoListServerApp LANGUAGES CXX)
 
-set(protobuf_DIR "D:/vcpkg/installed/x64-windows/share/protobuf")
-set(gRPC_DIR "D:/vcpkg/installed/x64-windows/share/grpc")
-
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
